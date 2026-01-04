@@ -20,7 +20,7 @@
                     <br>
                     <a href="https://scholar.google.com/citations?user=fdwhd9gAAAAJ" class="author-link" target="_blank">Xinyu Ye</a> &emsp;
                     <a href="https://joyhuyy1412.github.io/" class="author-link" target="_blank">Xinting Hu</a> &emsp;
-                    <a href="https://scholar.google.com/citations?user=z_4-QfQAAAAJ" class="author-link" target="_blank">Wenbo Zhu</a> &emsp;
+                    <a href="https://vitozhu04.github.io/" class="author-link" target="_blank">Wenbo Zhu</a> &emsp;
                     <a href="http://luqi.info/" class="author-link" target="_blank">Lu Qi</a> &emsp;
                     <a href="https://faculty.ucmerced.edu/mhyang/" class="author-link" target="_blank">Ming-Hsuan Yang</a> &emsp;
                     <a href="https://yxpalmweb.github.io/" class="author-link" target="_blank">Xu Yang</a> &emsp;

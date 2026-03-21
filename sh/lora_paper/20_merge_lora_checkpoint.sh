@@ -12,6 +12,9 @@ TRAIN_OUTPUT_DIR="$2"
 MERGED_OUTPUT_DIR="$3"
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+TRAIN_CONDA_ENV="${TRAIN_CONDA_ENV:-DFT}"
+
+export PYTHONNOUSERSITE=1
 
 if [[ ! -d "$ROOT_DIR/$TRAIN_OUTPUT_DIR" ]]; then
   echo "Train output dir not found: $ROOT_DIR/$TRAIN_OUTPUT_DIR"
@@ -24,7 +27,7 @@ if [[ -z "$LATEST_STEP_DIR" ]]; then
   exit 1
 fi
 
-ROOT_DIR="$ROOT_DIR" BASE_MODEL="$BASE_MODEL" ADAPTER_DIR="$LATEST_STEP_DIR" OUT_DIR="$ROOT_DIR/$MERGED_OUTPUT_DIR" python - <<'PY'
+ROOT_DIR="$ROOT_DIR" BASE_MODEL="$BASE_MODEL" ADAPTER_DIR="$LATEST_STEP_DIR" OUT_DIR="$ROOT_DIR/$MERGED_OUTPUT_DIR" conda run -n "$TRAIN_CONDA_ENV" python - <<'PY'
 import os
 import torch
 from peft import PeftModel

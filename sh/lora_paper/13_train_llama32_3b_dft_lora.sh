@@ -3,6 +3,7 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "$ROOT_DIR/verl"
+TRAIN_CONDA_ENV="${TRAIN_CONDA_ENV:-DFT}"
 
 NPROC_PER_NODE="${NPROC_PER_NODE:-1}"
 CUDA_DEVICES="${CUDA_VISIBLE_DEVICES:-0}"
@@ -17,8 +18,9 @@ export PYTHONPATH="$PWD"
 export CUDA_VISIBLE_DEVICES="$CUDA_DEVICES"
 export NCCL_SOCKET_IFNAME="${NCCL_SOCKET_IFNAME:-lo}"
 export GLOO_SOCKET_IFNAME="${GLOO_SOCKET_IFNAME:-lo}"
+export PYTHONNOUSERSITE=1
 
-torchrun --nnodes=1 --nproc_per_node="$NPROC_PER_NODE" --master_addr="$MASTER_ADDR" --master_port="$MASTER_PORT" \
+conda run -n "$TRAIN_CONDA_ENV" python -m torch.distributed.run --nnodes=1 --nproc_per_node="$NPROC_PER_NODE" --master_addr="$MASTER_ADDR" --master_port="$MASTER_PORT" \
   -m verl.trainer.fsdp_dft_trainer \
   data.train_files=data/numina_cot/train.parquet \
   data.val_files=data/math500/test.parquet \
@@ -40,7 +42,7 @@ torchrun --nnodes=1 --nproc_per_node="$NPROC_PER_NODE" --master_addr="$MASTER_AD
   trainer.default_local_dir="$SAVE_PATH" \
   trainer.project_name="$PROJECT_NAME" \
   trainer.experiment_name="$EXPERIMENT_NAME" \
-  trainer.logger=['console','tensorboard'] \
+  trainer.logger=['console','wandb'] \
   trainer.default_hdfs_dir=null \
   trainer.test_freq="${TEST_FREQ:-10}" \
   trainer.save_freq="${SAVE_FREQ:-50}" \

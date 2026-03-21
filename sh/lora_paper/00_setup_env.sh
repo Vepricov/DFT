@@ -36,7 +36,12 @@ if [[ "$SETUP_MODE" == "full" ]]; then
 	fi
 
 	cd "$ROOT_DIR/math_evaluation"
-	conda run --no-capture-output -n "$EVAL_CONDA_ENV" pip install -r requirements.txt
+	echo "[INFO] Installing eval dependencies..."
+	conda run --no-capture-output -n "$EVAL_CONDA_ENV" pip install torch
+	tmp_req_file="$(mktemp)"
+	grep -v '^flash_attn\s*$' requirements.txt > "$tmp_req_file"
+	conda run --no-capture-output -n "$EVAL_CONDA_ENV" pip install -r "$tmp_req_file"
+	rm -f "$tmp_req_file"
 
 	cd "$ROOT_DIR/math_evaluation/latex2sympy"
 	conda run --no-capture-output -n "$EVAL_CONDA_ENV" pip install -e .

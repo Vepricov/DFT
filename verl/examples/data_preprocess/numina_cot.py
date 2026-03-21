@@ -74,7 +74,7 @@ if __name__ == '__main__':
 
     data_source = 'AI-MO/NuminaMath-CoT'
     print(f"Loading the {data_source} dataset from huggingface...", flush=True)
-    dataset = datasets.load_dataset(data_source, trust_remote_code=True)
+    dataset = datasets.load_dataset(data_source)
 
     train_dataset = dataset['train']
     args.train_end = min(args.train_end, len(train_dataset))

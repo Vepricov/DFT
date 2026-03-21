@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -euo pipefail
+set -eo pipefail
 
 if [[ $# -lt 3 ]]; then
   echo "Usage: $0 <BASE_MODEL> <TRAIN_OUTPUT_DIR> <MERGED_OUTPUT_DIR>"

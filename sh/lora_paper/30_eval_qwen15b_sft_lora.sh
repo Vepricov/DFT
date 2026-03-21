@@ -13,7 +13,7 @@ PROMPT_TYPE="${PROMPT_TYPE:-qwen-boxed}"
 export CUDA_VISIBLE_DEVICES="$CUDA_DEVICES"
 export PYTHONNOUSERSITE=1
 
-conda run -n "$EVAL_CONDA_ENV" python -u math_eval.py \
+conda run --no-capture-output -n "$EVAL_CONDA_ENV" python -u math_eval.py \
   --model_name_or_path "$MODEL_NAME_OR_PATH" \
   --data_names "math_oai,minerva_math,olympiadbench,aime24,amc23" \
   --output_dir "$OUTPUT_DIR" \

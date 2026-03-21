@@ -20,7 +20,7 @@ export NCCL_SOCKET_IFNAME="${NCCL_SOCKET_IFNAME:-lo}"
 export GLOO_SOCKET_IFNAME="${GLOO_SOCKET_IFNAME:-lo}"
 export PYTHONNOUSERSITE=1
 
-conda run -n "$TRAIN_CONDA_ENV" python -m torch.distributed.run --nnodes=1 --nproc_per_node="$NPROC_PER_NODE" --master_addr="$MASTER_ADDR" --master_port="$MASTER_PORT" \
+conda run --no-capture-output -n "$TRAIN_CONDA_ENV" python -m torch.distributed.run --nnodes=1 --nproc_per_node="$NPROC_PER_NODE" --master_addr="$MASTER_ADDR" --master_port="$MASTER_PORT" \
   -m verl.trainer.fsdp_sft_trainer \
   data.train_files=data/numina_cot/train.parquet \
   data.val_files=data/math500/test.parquet \

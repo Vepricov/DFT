@@ -2,7 +2,6 @@ import random
 import os
 import argparse
 import time
-from vllm import LLM, SamplingParams
 from datetime import datetime
 from tqdm import tqdm
 import json
@@ -18,6 +17,12 @@ from trajectory import *
 from data_loader import load_data
 from python_executor import PythonExecutor
 from model_utils import load_hf_lm_and_tokenizer, generate_completions
+
+try:
+    from vllm import LLM, SamplingParams
+except ImportError:
+    LLM = None
+    SamplingParams = None
 
 
 def parse_args():
@@ -91,6 +96,8 @@ def worker_process(rank, world_size, args, data_name, examples_chunk):
     
     # 加载模型
     if args.use_vllm:
+        if LLM is None or SamplingParams is None:
+            raise ImportError("vllm is not installed. Install vllm or run without --use_vllm.")
         llm = LLM(
             model=args.model_name_or_path,
             tensor_parallel_size=1,

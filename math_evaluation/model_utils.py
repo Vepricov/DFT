@@ -77,6 +77,7 @@ class KeyWordsCriteria(StoppingCriteria):
 @torch.no_grad()
 def generate_completions(model, tokenizer, prompts, batch_size=1, stop_id_sequences=None, add_special_tokens=True, disable_tqdm=False, **generation_kwargs):
     generations = []
+    generation_kwargs.setdefault("pad_token_id", tokenizer.pad_token_id)
     if not disable_tqdm:
         progress = tqdm.tqdm(total=len(prompts), desc="Generating Completions")
 
@@ -197,6 +198,10 @@ def load_hf_lm_and_tokenizer(
         if load_in_half:
             model = model.half()
     model.eval()
+    if getattr(model.config, "pad_token_id", None) is None:
+        model.config.pad_token_id = tokenizer.pad_token_id
+    if getattr(model.generation_config, "pad_token_id", None) is None:
+        model.generation_config.pad_token_id = tokenizer.pad_token_id
     return model, tokenizer
 
 

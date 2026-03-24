@@ -6,6 +6,7 @@ torch
 transformers
 python_dateutil
 flash_attn
+accelerate
 
 # math_eval
 sympy==1.12

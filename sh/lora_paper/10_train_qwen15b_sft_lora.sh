@@ -28,7 +28,7 @@ conda run --no-capture-output -n "$TRAIN_CONDA_ENV" python -m torch.distributed.
   data.response_key=extra_info \
   data.prompt_dict_keys=['question'] \
   +data.response_dict_keys=['answer'] \
-  data.train_batch_size="${TRAIN_BATCH_SIZE:-256}" \
+  data.train_batch_size="${TRAIN_BATCH_SIZE:-64}" \
   data.micro_batch_size_per_gpu="${MICRO_BATCH_SIZE_PER_GPU:-4}" \
   data.max_length="${MAX_LENGTH:-2048}" \
   optim.lr="${LR:-5e-5}" \
@@ -44,7 +44,7 @@ conda run --no-capture-output -n "$TRAIN_CONDA_ENV" python -m torch.distributed.
   trainer.experiment_name="$EXPERIMENT_NAME" \
   trainer.logger=['console','wandb'] \
   trainer.default_hdfs_dir=null \
-  trainer.test_freq="${TEST_FREQ:-10}" \
+  trainer.test_freq="${TEST_FREQ:-50}" \
   trainer.save_freq="${SAVE_FREQ:-50}" \
   trainer.total_epochs="${TOTAL_EPOCHS:-1}" \
   ulysses_sequence_parallel_size="${ULYSSES_SP:-1}" \

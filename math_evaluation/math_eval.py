@@ -5,6 +5,7 @@ import time
 from datetime import datetime
 from tqdm import tqdm
 import json
+import traceback
 
 import torch
 import torch.multiprocessing as mp
@@ -85,49 +86,54 @@ def prepare_data(data_name, args):
 
 def worker_process(rank, world_size, args, data_name, examples_chunk):
     """每个GPU进程的工作函数"""
-    # 设置CUDA设备
-    torch.cuda.set_device(rank)
-    os.environ['CUDA_VISIBLE_DEVICES'] = str(rank)
-    
-    print(f"进程 {rank}: 加载模型到GPU {rank}")
-    
-    # 设置随机种子
-    torch.manual_seed(args.seed + rank)
-    
-    # 加载模型
-    if args.use_vllm:
-        if LLM is None or SamplingParams is None:
-            raise ImportError("vllm is not installed. Install vllm or run without --use_vllm.")
-        llm = LLM(
-            model=args.model_name_or_path,
-            tensor_parallel_size=1,
-            pipeline_parallel_size=1,
-            trust_remote_code=True,
-            # max_model_len=8192,
-        )
-        tokenizer = None
-        if args.apply_chat_template:
-            tokenizer = AutoTokenizer.from_pretrained(
-                args.model_name_or_path, trust_remote_code=True
-            )
-    else:
-        llm, tokenizer = load_hf_lm_and_tokenizer(
-            model_name_or_path=args.model_name_or_path,
-            load_in_half=True,
-            use_fast_tokenizer=True,
-            use_safetensors=args.use_safetensors,
-        )
+    try:
+        # 设置CUDA设备
+        torch.cuda.set_device(rank)
+        os.environ['CUDA_VISIBLE_DEVICES'] = str(rank)
 
-    # 处理数据
-    result = main_worker(llm, tokenizer, data_name, args, examples_chunk, rank)
-    
-    # 保存当前进程的结果
-    os.makedirs(args.output_dir, exist_ok=True)
-    output_file = os.path.join(args.output_dir, f"{data_name}_results_rank_{rank}.json")
-    with open(output_file, "w", encoding="utf8") as f:
-        json.dump(result, f, ensure_ascii=False, indent=2)
-    
-    print(f"进程 {rank}: 完成，处理了 {len(examples_chunk)} 个样本")
+        print(f"进程 {rank}: 加载模型到GPU {rank}")
+
+        # 设置随机种子
+        torch.manual_seed(args.seed + rank)
+
+        # 加载模型
+        if args.use_vllm:
+            if LLM is None or SamplingParams is None:
+                raise ImportError("vllm is not installed. Install vllm or run without --use_vllm.")
+            llm = LLM(
+                model=args.model_name_or_path,
+                tensor_parallel_size=1,
+                pipeline_parallel_size=1,
+                trust_remote_code=True,
+                # max_model_len=8192,
+            )
+            tokenizer = None
+            if args.apply_chat_template:
+                tokenizer = AutoTokenizer.from_pretrained(
+                    args.model_name_or_path, trust_remote_code=True
+                )
+        else:
+            llm, tokenizer = load_hf_lm_and_tokenizer(
+                model_name_or_path=args.model_name_or_path,
+                load_in_half=True,
+                use_fast_tokenizer=True,
+                use_safetensors=args.use_safetensors,
+            )
+
+        # 处理数据
+        result = main_worker(llm, tokenizer, data_name, args, examples_chunk, rank)
+
+        # 保存当前进程的结果
+        os.makedirs(args.output_dir, exist_ok=True)
+        output_file = os.path.join(args.output_dir, f"{data_name}_results_rank_{rank}.json")
+        with open(output_file, "w", encoding="utf8") as f:
+            json.dump(result, f, ensure_ascii=False, indent=2)
+
+        print(f"进程 {rank}: 完成，处理了 {len(examples_chunk)} 个样本")
+    except Exception as error:
+        print(f"进程 {rank}: 失败 -> {error}")
+        traceback.print_exc()
+        raise
 
 
 def merge_results(args, data_name, world_size):
@@ -208,6 +214,10 @@ def setup(args):
         # 等待所有进程完成
         for p in processes:
             p.join()
+
+        failed = [p.exitcode for p in processes if p.exitcode != 0]
+        if failed:
+            raise RuntimeError(f"At least one worker process failed. Exit codes: {failed}")
         
         # 合并结果
         result_json = merge_results(args, data_name, world_size)
@@ -401,6 +411,10 @@ def main_worker(llm, tokenizer, data_name, args, examples, rank):
     }
 
 if __name__ == "__main__":
+    try:
+        mp.set_start_method("spawn", force=True)
+    except RuntimeError:
+        pass
     args = parse_args()
     set_seed(args.seed)
     setup(args)

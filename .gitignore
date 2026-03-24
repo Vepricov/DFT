@@ -11,6 +11,7 @@ experiments/**/checkpoints/
 */**/outputs/
 experiments/recsys25/results/embeddings*
 experiments/recsys25/embeddings
+merged/
 
 .venv/
 # Byte-compiled / optimized / DLL files
